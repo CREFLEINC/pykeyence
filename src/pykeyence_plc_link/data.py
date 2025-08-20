@@ -54,6 +54,8 @@ class ReceivedData:
     data: bytes
 
     def decode(self) -> str:
+        if not self.data:
+            return ""
         return self.data.decode('ascii')
 
 

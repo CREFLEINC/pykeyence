@@ -1,5 +1,5 @@
 import pytest
-from src.pykeyence_plc_comm.data import WriteCommand, ReadCommand
+from src.pykeyence_plc_link.data import WriteCommand, ReadCommand
 
 
 @pytest.mark.parametrize("address, data, expected", [
