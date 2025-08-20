@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from src.pykeyence_plc_comm.protocol import UdpClient
-from src.pykeyence_plc_comm.data import WriteCommand, ReadCommand, ReceivedData
+from src.pykeyence_plc_link.protocol import UdpClient
+from src.pykeyence_plc_link.data import WriteCommand, ReadCommand, ReceivedData
 
 
 class PlcClientInterface(ABC):

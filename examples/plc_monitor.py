@@ -1,7 +1,7 @@
 import time
 from mock.mock_keyence_plc_server import MockKeyencePlcServer
-from src.pykeyence_plc_comm.client import KeyencePlcClient
-from src.pykeyence_plc_comm.monitor import PlcMonitor
+from src.pykeyence_plc_link.client import KeyencePlcClient
+from src.pykeyence_plc_link.monitor import PlcMonitor
 
 
 mock_server = MockKeyencePlcServer(
