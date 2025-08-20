@@ -37,7 +37,7 @@ class KeyencePlcClient(PlcClientInterface):
         )
         encoded_cmd = cmd.encode()
         self.client.send(packet=encoded_cmd)
-        data = self.client.receive()
+        data = self.client.receive()        
         data = ReceivedData(data=data).decode()
         if data.startswith("OK"):
             return True

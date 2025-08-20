@@ -29,7 +29,9 @@ monitor = PlcMonitor(
 )
 monitor.start()
 time.sleep(1)
-client.write("DM100", "AB")
+mock_server.memory["DM100"] = "00"
 time.sleep(1)
-client.write("DM100", "CD")
+mock_server.memory["DM100"] = "AB"
+time.sleep(1)
+mock_server.stop()
 time.sleep(1)

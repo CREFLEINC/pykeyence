@@ -1,3 +1,4 @@
+import time
 import socket
 import threading
 
@@ -9,11 +10,15 @@ class MockKeyencePlcServer(threading.Thread):
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind((self.ip, self.port))
+        self.stop_flag = threading.Event()
         self.daemon = True
-        self.memory = {
-            "DM100": "00000"  # 초기값 설정
-        }
+        self.memory = {}
         print(f"Mock Keyence PLC Server started at {self.ip}:{self.port}")
+
+    def stop(self):
+        self.socket.close()
+        self.stop_flag.set()
+        print("Mock Keyence PLC Server stopped.")
 
     def receive(self, buffer_size: int = 1024):
         try:
@@ -31,15 +36,24 @@ class MockKeyencePlcServer(threading.Thread):
 
     def run(self):
         print("Mock Keyence PLC Server is running...")
-        while True:
+        self.stop_flag.clear()
+        while not self.stop_flag.is_set():
+            time.sleep(0.001)
             data, addr = self.receive()
-            data = data.decode('ascii', errors='ignore') if data else None
-            if data == 'RD DM100\r\n':
-                response = self.memory["DM100"]
-                encoded = response.encode('ascii')
+            if not data:
+                continue
+
+            data = data.decode('ascii', errors='ignore')
+            if data.startswith('RD') and len(data.split()) == 2:
+                key = data.split()[1]
+                value = self.memory.get(key, "00")  # 기본값 설정
+                encoded = value.encode('ascii')
                 self.send(encoded, addr)
-            elif data.startswith('WR DM100'):
+            elif data.startswith('WR') and len(data.split()) == 3:
+                key = data.split()[1]
+                value = data.split()[2]
+                self.memory[key] = value
                 response = 'OK'
-                self.memory["DM100"] = data.split()[2]
                 encoded = response.encode('ascii')
                 self.send(encoded, addr)
+           

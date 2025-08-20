@@ -13,7 +13,7 @@ class EthernetProtocol(abc.ABC):
 
 
 class UdpClient(EthernetProtocol):
-    def __init__(self, ip: str, port: int = 3001, timeout=0.001):
+    def __init__(self, ip: str, port: int = 3001, timeout=1):
         super().__init__()
         self.ip = ip
         self.port = port

@@ -32,9 +32,11 @@ class PlcMonitor(threading.Thread):
             try:
                 current_value = self.client.read(self.address, self.count)
                 if current_value != self.last_value:
+                    self.last_value = current_value
+
                     if callable(self.on_changed_callback):
                         self.on_changed_callback(current_value)
-                    self.last_value = current_value
+                    
                 self.is_disconnected = False
             except Exception as e:
                 import traceback
