@@ -23,24 +23,11 @@ class UdpClient(EthernetProtocol):
     def send(self, packet: bytes):
         self.socket.sendto(packet, (self.ip, self.port))
 
-    def receive(self, buffer_size: int = 1024):
+    def receive(self, buffer_size: int = 1024) -> tuple[bytes, tuple[str, int]]:
         try:
-            return self.socket.recvfrom(buffer_size)
+            data, addr = self.socket.recvfrom(buffer_size)
+            return data
         except socket.timeout:
             pass
         except Exception as e:
             print(e)
-
-
-class TcpClient(EthernetProtocol):
-    def __init__(self, ip: str, port: int = 2001, timeout=0.01):
-        super().__init__()
-        # TODO : To be implemented.
-
-    def send(self, packet: bytes):
-        # TODO : To be implemented.
-        pass
-
-    def receive(self, buffer_size: int = 1024):
-        # TODO : To be implemented.
-        pass

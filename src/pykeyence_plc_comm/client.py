@@ -1,14 +1,25 @@
+from abc import ABC, abstractmethod
 from src.pykeyence_plc_comm.protocol import UdpClient
 from src.pykeyence_plc_comm.data import WriteCommand, ReadCommand, ReceivedData
 
 
-class KeyencePlcClient:
+class PlcClientInterface(ABC):
+    @abstractmethod
+    def read(self, address: str, count: int = 1) -> str:
+        pass
+
+    @abstractmethod
+    def write(self, address: str, data: str) -> bool:
+        pass
+
+
+class KeyencePlcClient(PlcClientInterface):
     def __init__(self, host: str, port: int):
         self.host = host
         self.port = port
         self.client = UdpClient(host, port)
 
-    def read(self, address: str, count: int) -> str:
+    def read(self, address: str, count: int = 1) -> str:
         cmd = ReadCommand(
             address=address,
             count=count,
