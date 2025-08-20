@@ -4,7 +4,7 @@ from src.pykeyence_plc_link.client import PlcClientInterface
 
 
 class Heartbeat(threading.Thread):
-    def __init__(self, client: PlcClientInterface, address: str, interval_ms: int = 1000):
+    def __init__(self, client: PlcClientInterface, address: str, interval_ms: int = 1000, on_disconnected_callback: callable = None):
         super().__init__()
         self.daemon = True
         self.client = client
@@ -13,6 +13,7 @@ class Heartbeat(threading.Thread):
         self.interval_sec = interval_ms / 1000
         self.stop_flag = threading.Event()
         self.beat = False
+        self.on_disconnected_callback = on_disconnected_callback
         
     def stop(self):
         self.stop_flag.set()        
@@ -24,6 +25,6 @@ class Heartbeat(threading.Thread):
                 self.beat = not self.beat
                 self.client.write(address=self.address, data=str(int(self.beat)))
             except Exception as e:
-                print(f"Heartbeat failed: {e}")
+                if callable(self.on_disconnected_callback):
+                    self.on_disconnected_callback()
             time.sleep(self.interval_sec)
-
