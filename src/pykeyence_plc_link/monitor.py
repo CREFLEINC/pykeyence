@@ -1,6 +1,6 @@
 import time
 import threading
-from src.pykeyence_plc_link.client import PlcClientInterface
+from .client import PlcClientInterface
 
 
 class PlcMonitor(threading.Thread):

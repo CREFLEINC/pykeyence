@@ -1,7 +1,7 @@
 import threading
 from abc import ABC, abstractmethod
-from src.pykeyence_plc_link.protocol import UdpClient
-from src.pykeyence_plc_link.data import WriteCommand, ReadCommand, ReceivedData
+from .protocol import UdpClient
+from .data import WriteCommand, ReadCommand, ReceivedData
 
 
 class PlcClientInterface(ABC):
