@@ -1,5 +1,5 @@
 from src.pykeyence_plc_link.client import KeyencePlcClient
-from mock.mock_keyence_plc_server import MockKeyencePlcServer
+from src.pykeyence_plc_link.mock.mock_keyence_plc_server import MockKeyencePlcServer
 
 
 IP = "127.0.0.1"
