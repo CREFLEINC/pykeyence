@@ -302,8 +302,8 @@ wheels = [
 ]
 
 [[package]]
-name = "pykeyence-plc-comm"
-version = "0.1.0"
+name = "pykeyence"
+version = "0.1.6"
 source = { editable = "." }
 
 [package.optional-dependencies]
