@@ -102,15 +102,21 @@ class ReceivedData:
 
     def decode(self) -> str:
         if not self.data:
-            return ""
-        
+            raise ValueError("데이터가 없습니다.")
+
         decoded_data = self.data.decode('ascii')
         if decoded_data.startswith('OK'):
             return decoded_data
         
         _data_list = decoded_data.split(' ')
-        _data_list = list(DataConverter.decimal_16bit_to_string(int(item)) for item in _data_list)
-        return ''.join(_data_list)
+        _new_data_list = []
+        for item in _data_list:
+            if len(item) != 5:
+                raise ValueError(f"데이터가 올바르지 않습니다. 5자리가 아닙니다. {item}")
+
+            _new_data_list.append(DataConverter.decimal_16bit_to_string(int(item)))
+        
+        return ''.join(_new_data_list)
 
 
 if __name__ == "__main__":
