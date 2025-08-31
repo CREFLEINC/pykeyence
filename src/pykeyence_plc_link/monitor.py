@@ -30,6 +30,10 @@ class PlcMonitor(threading.Thread):
         self.stop_flag.clear()
         while not self.stop_flag.is_set():
             try:
+                if self.last_value is None:
+                    self.last_value = self.client.read(self.address, self.count)
+                    continue
+                
                 current_value = self.client.read(self.address, self.count)
                 if current_value != self.last_value:
                     self.last_value = current_value
