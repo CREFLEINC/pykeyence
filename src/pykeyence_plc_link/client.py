@@ -29,7 +29,7 @@ class KeyencePlcClient(PlcClientInterface):
             data = self.client.receive()
             return ReceivedData(data=data).decode()
 
-    def write(self, address: str, data: str) -> bool:
+    def write(self, address: str, data: list[str]) -> bool:
         with self._lock:
             cmd = WriteCommand(address=address, data=data)
             encoded_cmd = cmd.encode()
