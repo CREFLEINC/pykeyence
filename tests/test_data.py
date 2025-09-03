@@ -1,69 +1,116 @@
 import pytest
 from pykeyence_plc_link.data import (
-    TwoCharConverter,
+    CharConverter,
     WriteCommand,
     ReadCommand,
-    ReceivedData
+    ReceivedData,
+    parse_unicode_string
 )
 
 
-class TestTwoCharConverter:
-    """TwoCharConverter 클래스에 대한 테스트"""
+class TestCharConverter:
+    """CharConverter 클래스에 대한 테스트"""
     
-    def test_string_to_16bit_decimal_little_endian(self):
+    def test_two_char_to_16bit_decimal_little_endian(self):
         """리틀 엔디안으로 2글자 문자열을 16비트 10진수로 변환하는 테스트"""
         # 정상 케이스
-        assert TwoCharConverter.string_to_16bit_decimal("AB", "little") == 16961
-        assert TwoCharConverter.string_to_16bit_decimal("V1", "little") == 12630
-        assert TwoCharConverter.string_to_16bit_decimal("12", "little") == 12849
+        assert CharConverter.string_to_16bit_decimal("AB", "little") == "16961"
+        assert CharConverter.string_to_16bit_decimal("V1", "little") == "12630"
+        assert CharConverter.string_to_16bit_decimal("12", "little") == "12849"
         
-    def test_string_to_16bit_decimal_big_endian(self):
+    def test_two_char_to_16bit_decimal_big_endian(self):
         """빅 엔디안으로 2글자 문자열을 16비트 10진수로 변환하는 테스트"""
         # 정상 케이스
-        assert TwoCharConverter.string_to_16bit_decimal("AB", "big") == 16706
-        assert TwoCharConverter.string_to_16bit_decimal("V1", "big") == 22065  # V=86, 1=49, big endian: 86*256 + 49 = 22065
-        assert TwoCharConverter.string_to_16bit_decimal("12", "big") == 12594
+        assert CharConverter.string_to_16bit_decimal("AB", "big") == "16706"
+        assert CharConverter.string_to_16bit_decimal("V1", "big") == "22065"
+        assert CharConverter.string_to_16bit_decimal("12", "big") == "12594"
+
+    def test_one_char_to_16bit_decimal(self):
+        """1글자 문자열을 16비트 10진수로 변환하는 테스트"""
+        assert CharConverter.string_to_16bit_decimal("A", "little") == "00065"
+        assert CharConverter.string_to_16bit_decimal("B", "little") == "00066"
+        assert CharConverter.string_to_16bit_decimal("V", "little") == "00086"
+        assert CharConverter.string_to_16bit_decimal("0", "little") == "00048"
+        assert CharConverter.string_to_16bit_decimal("1", "little") == "00049"
+        assert CharConverter.string_to_16bit_decimal("2", "little") == "00050"
+        assert CharConverter.string_to_16bit_decimal("3", "little") == "00051"
+        assert CharConverter.string_to_16bit_decimal("4", "little") == "00052"
+        assert CharConverter.string_to_16bit_decimal("5", "little") == "00053"
+        assert CharConverter.string_to_16bit_decimal("6", "little") == "00054"
+        assert CharConverter.string_to_16bit_decimal("7", "little") == "00055"
+        assert CharConverter.string_to_16bit_decimal("8", "little") == "00056"
+        assert CharConverter.string_to_16bit_decimal("9", "little") == "00057"
         
     def test_string_to_16bit_decimal_default_byteorder(self):
         """기본 바이트 순서(리틀 엔디안)로 변환하는 테스트"""
-        assert TwoCharConverter.string_to_16bit_decimal("AB") == 16961
+        assert CharConverter.string_to_16bit_decimal("AB") == "16961"  # little endian 결과
         
     def test_string_to_16bit_decimal_invalid_length(self):
-        """잘못된 길이의 문자열에 대한 예외 테스트"""
-        with pytest.raises(ValueError, match="문자열은 반드시 2글자여야 합니다."):
-            TwoCharConverter.string_to_16bit_decimal("A")
-        
-        with pytest.raises(ValueError, match="문자열은 반드시 2글자여야 합니다."):
-            TwoCharConverter.string_to_16bit_decimal("ABC")
+        """잘못된 길이의 문자열에 대한 예외 테스트"""        
+        with pytest.raises(ValueError, match="문자열은 반드시 2글자 이하여야 합니다."):
+            CharConverter.string_to_16bit_decimal("ABC")
             
-        with pytest.raises(ValueError, match="문자열은 반드시 2글자여야 합니다."):
-            TwoCharConverter.string_to_16bit_decimal("")
+        with pytest.raises(ValueError, match="빈 문자열은 허용되지 않습니다."):
+            CharConverter.string_to_16bit_decimal("")
             
     def test_string_to_16bit_decimal_invalid_byteorder(self):
         """잘못된 바이트 순서에 대한 예외 테스트"""
         with pytest.raises(ValueError, match='byteorder는 "little" 또는 "big"이어야 합니다.'):
-            TwoCharConverter.string_to_16bit_decimal("AB", "middle")
-            
+            CharConverter.string_to_16bit_decimal("AB", "middle")
+    
     def test_decimal_16bit_to_string(self):
         """16비트 10진수를 2글자 문자열로 변환하는 테스트"""
         # 정상 케이스
-        assert TwoCharConverter.decimal_16bit_to_string(16961) == "AB"
-        assert TwoCharConverter.decimal_16bit_to_string(12630) == "V1"
-        assert TwoCharConverter.decimal_16bit_to_string(12849) == "12"
-        assert TwoCharConverter.decimal_16bit_to_string(0) == "\x00\x00"
-        # 65535는 ASCII 범위를 벗어나므로 테스트에서 제외
-        # assert TwoCharConverter.decimal_16bit_to_string(65535) == "\xff\xff"
+        assert CharConverter.decimal_16bit_to_string(16961) == "AB"
+        assert CharConverter.decimal_16bit_to_string(12630) == "V1"
+        assert CharConverter.decimal_16bit_to_string(12849) == "12"
         
     def test_decimal_16bit_to_string_invalid_range(self):
-        """ASCII 변환 범위를 벗어나는 데이터에 대한 예외 테스트"""
-        with pytest.raises(ValueError, match="ascii 변환 범위를 벗어납니다. 데이터는 반드시 65535 이하여야 합니다."):
-            TwoCharConverter.decimal_16bit_to_string(65536)
+        """변환 불가 값에 대한 예외 테스트"""
+        with pytest.raises(ValueError, match="unicode 변환을 지원하지 않는 값입니다. 128"):
+            CharConverter.decimal_16bit_to_string(128)
+
+
+class TestParseUnicodeString:
+    """parse_unicode_string 함수에 대한 테스트"""
+    def test_parse_unicode_string_empty_list(self):
+        """빈 리스트에 대한 예외 테스트"""
+        with pytest.raises(ValueError, match="데이터 리스트가 비어있습니다."):
+            parse_unicode_string([])
             
-        with pytest.raises(ValueError, match="ascii 변환 범위를 벗어납니다. 데이터는 반드시 65535 이하여야 합니다."):
-            TwoCharConverter.decimal_16bit_to_string(100000)
+    def test_parse_unicode_string_invalid_byteorder(self):
+        """잘못된 바이트 순서에 대한 예외 테스트"""
+        data_list = ["12345", "65534"]
+        with pytest.raises(ValueError, match='byteorder는 "little" 또는 "big"이어야 합니다.'):
+            parse_unicode_string(data_list, "middle")
             
-        with pytest.raises(ValueError, match="ascii 변환 범위를 벗어납니다. 데이터는 반드시 65535 이하여야 합니다."):
-            TwoCharConverter.decimal_16bit_to_string(999999)
+    def test_parse_unicode_string_invalid_length(self):
+        """5자리가 아닌 데이터에 대한 예외 테스트"""
+        data_list = ["00001", "1234", "65534"]
+        with pytest.raises(ValueError, match="데이터는 반드시 5자리여야 합니다."):
+            parse_unicode_string(data_list)
+            
+    def test_parse_unicode_string_non_numeric_data(self):
+        """숫자가 아닌 데이터에 대한 예외 테스트"""
+        data_list = ["00001", "abc12", "65534"]
+        with pytest.raises(ValueError, match="데이터는 숫자여야 합니다."):
+            parse_unicode_string(data_list)
+            
+    def test_parse_unicode_string_data_too_large(self):
+        """65535를 초과하는 데이터에 대한 예외 테스트"""
+        data_list = ["99999"]
+        with pytest.raises(OverflowError, match="int too big to convert"):
+            parse_unicode_string(data_list)
+            
+    def test_parse_unicode_string_complex_string(self):
+        """복잡한 문자열 변환 테스트 (data.py의 예제와 동일)"""
+        # "V143-00043B/240510/00064" -> 2글자씩 나눠서 변환
+        string_data = ["v1", "43", "-0", "00", "43", "B/", "24", "05", "10", "/0", "00", "64"]
+        encoded = list(map(lambda x: CharConverter.string_to_16bit_decimal(x), string_data))
+        result = parse_unicode_string(encoded)
+        # 결과는 2글자씩 변환된 문자열
+        assert len(result) == 24  # 12개의 2글자 문자열이 연결되어 총 24글자
+        assert result == "v143-00043B/240510/00064"  # 실제 결과값 확인
 
 
 class TestWriteCommand:
@@ -272,10 +319,10 @@ class TestIntegration:
         """TwoCharConverter 통합 테스트"""
         # 문자열을 숫자로 변환
         original_string = "AB"
-        decimal_value = TwoCharConverter.string_to_16bit_decimal(original_string)
+        decimal_value = CharConverter.string_to_16bit_decimal(original_string)
         
         # 숫자를 다시 문자열로 변환
-        converted_string = TwoCharConverter.decimal_16bit_to_string(decimal_value)
+        converted_string = CharConverter.decimal_16bit_to_string(decimal_value)
         
         # 변환된 문자열이 원본과 일치하는지 확인
         assert converted_string == original_string

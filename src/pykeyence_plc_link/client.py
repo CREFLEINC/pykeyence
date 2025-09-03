@@ -1,4 +1,5 @@
 import threading
+from typing import Union
 from abc import ABC, abstractmethod
 from .protocol import UdpClient
 from .data import WriteCommand, ReadCommand, ReceivedData
@@ -29,7 +30,7 @@ class KeyencePlcClient(PlcClientInterface):
             data = self.client.receive()
             return ReceivedData(data=data).decode()
 
-    def write(self, address: str, data: list[str]) -> bool:
+    def write(self, address: str, data: Union[int, list[int]]) -> bool:
         with self._lock:
             cmd = WriteCommand(address=address, data=data)
             encoded_cmd = cmd.encode()

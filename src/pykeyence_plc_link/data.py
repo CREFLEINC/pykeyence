@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from typing import Union
 
 
-class TwoCharConverter:
+class CharConverter:
     """
     PLC에서 BCR 문자열을 받을 때 사용하는 데이터 변환 유틸리티 클래스
     
@@ -33,7 +33,7 @@ class TwoCharConverter:
     """
     
     @staticmethod
-    def string_to_16bit_decimal(data: str, byteorder: str = "little") -> int:
+    def string_to_16bit_decimal(data: str, byteorder: str = "little") -> str:
         """
         문자열(2글자)을 16비트 10진수로 변환
         
@@ -49,14 +49,17 @@ class TwoCharConverter:
             
         예) "AB" -> 16961 (little), 16706 (big)
             "V1" -> 12630 (little), 12849 (big)
-        """
-        if len(data) != 2:
-            raise ValueError("문자열은 반드시 2글자여야 합니다.")
+        # """
+        if len(data) > 2:
+            raise ValueError("문자열은 반드시 2글자 이하여야 합니다.")
+        
+        if len(data) == 0:
+            raise ValueError("빈 문자열은 허용되지 않습니다.")
         
         if byteorder not in ["little", "big"]:
             raise ValueError('byteorder는 "little" 또는 "big"이어야 합니다.')
             
-        return int.from_bytes(data.encode("ascii"), byteorder)
+        return str(int.from_bytes(data.encode("ascii"), byteorder)).zfill(5)
     
     @staticmethod
     def decimal_16bit_to_string(data: int) -> str:
@@ -69,9 +72,15 @@ class TwoCharConverter:
         Returns:
             변환된 2글자 문자열
         """
-        if data > 65535:
-            raise ValueError(f"ascii 변환 범위를 벗어납니다. 데이터는 반드시 65535 이하여야 합니다. {data}")
-        return data.to_bytes(2, 'little').decode("ascii")
+        if not isinstance(data, int):
+            raise ValueError(f"데이터는 반드시 정수여야 합니다. {data}")
+        
+        try:
+            bytes_data = data.to_bytes(2, 'little').decode("ascii")
+        except UnicodeDecodeError:
+            raise ValueError(f"unicode 변환을 지원하지 않는 값입니다. {data}")
+                
+        return bytes_data
 
 
 @dataclass
@@ -148,6 +157,42 @@ class ReceivedData:
         return _new_data_list
 
 
+def parse_unicode_string(data_list: list[str], byteorder: str = "little") -> str:
+    """
+    PLC에서 받은 연속 데이터를 유니코드 문자열로 변환하는 유틸리티 함수
+    
+    Args:
+        data_list: 변환할 5자리 숫자 문자열 리스트 (예: ["12345", "65534"])
+        byteorder: 바이트 순서 ("little" 또는 "big"), 기본값은 "little"
+        
+    Returns:
+        변환된 문자열
+        
+    Raises:
+        ValueError: 데이터가 비어있거나 형식이 올바르지 않은 경우
+    
+    """
+    if not data_list:
+        raise ValueError("데이터 리스트가 비어있습니다.")
+    
+    if byteorder not in ["little", "big"]:
+        raise ValueError('byteorder는 "little" 또는 "big"이어야 합니다.')
+    
+    result_string = ""
+    for data_str in data_list:
+        if len(data_str) != 5:
+            raise ValueError(f"데이터는 반드시 5자리여야 합니다. {data_str}")
+        
+        try:
+            data_int = int(data_str)
+        except ValueError:
+            raise ValueError(f"데이터는 숫자여야 합니다. {data_str}")
+        
+        result_string += CharConverter.decimal_16bit_to_string(data_int)
+    
+    return result_string
+
+
 if __name__ == "__main__":
     # Example usage    
     wr_cmd = WriteCommand(address="DM100", data=100)
@@ -172,7 +217,22 @@ if __name__ == "__main__":
     print('6', values)
 
     word = 'AB'
-    print('7', TwoCharConverter.string_to_16bit_decimal(word))
+    print('7', CharConverter.string_to_16bit_decimal(word))
 
     word = 16961
-    print('8', TwoCharConverter.decimal_16bit_to_string(word))
+    print('8', CharConverter.decimal_16bit_to_string(word))
+    
+    # parse_bcr 함수 테스트 - 5자리 문자열 리스트로
+
+    # bcr = "V143-00043B/240510/00064"
+    string_data = ["v1", "43", "-0", "00", "43","B/", "24", "05", "10", "/0", "00", "64"]
+    encoded = list(map(lambda x: CharConverter.string_to_16bit_decimal(x), string_data))
+    print('9', encoded)
+    print('10', parse_unicode_string(encoded))
+
+    # bcr = "V143-00043B/240510/000641"
+    string_data = ["v1", "43", "-0", "00", "43","B/", "24", "05", "10", "/0", "00", "64", "1"]
+    encoded = list(map(lambda x: CharConverter.string_to_16bit_decimal(x), string_data))
+    print('11', encoded)
+    print('12', parse_unicode_string(encoded))
+
