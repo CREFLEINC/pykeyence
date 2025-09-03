@@ -4,7 +4,7 @@ from pykeyence_plc_link.data import (
     WriteCommand,
     ReadCommand,
     ReceivedData,
-    parse_unicode_string
+    decode_plc_data_to_unicode
 )
 
 
@@ -71,43 +71,43 @@ class TestCharConverter:
             CharConverter.decimal_16bit_to_string(128)
 
 
-class TestParseUnicodeString:
-    """parse_unicode_string 함수에 대한 테스트"""
+class TestDecodePlcDataToUnicode:
+    """decode_plc_data_to_unicode 함수에 대한 테스트"""
     def test_parse_unicode_string_empty_list(self):
         """빈 리스트에 대한 예외 테스트"""
         with pytest.raises(ValueError, match="데이터 리스트가 비어있습니다."):
-            parse_unicode_string([])
+            decode_plc_data_to_unicode([])
             
     def test_parse_unicode_string_invalid_byteorder(self):
         """잘못된 바이트 순서에 대한 예외 테스트"""
         data_list = ["12345", "65534"]
         with pytest.raises(ValueError, match='byteorder는 "little" 또는 "big"이어야 합니다.'):
-            parse_unicode_string(data_list, "middle")
+            decode_plc_data_to_unicode(data_list, "middle")
             
     def test_parse_unicode_string_invalid_length(self):
         """5자리가 아닌 데이터에 대한 예외 테스트"""
         data_list = ["00001", "1234", "65534"]
         with pytest.raises(ValueError, match="데이터는 반드시 5자리여야 합니다."):
-            parse_unicode_string(data_list)
+            decode_plc_data_to_unicode(data_list)
             
     def test_parse_unicode_string_non_numeric_data(self):
         """숫자가 아닌 데이터에 대한 예외 테스트"""
         data_list = ["00001", "abc12", "65534"]
         with pytest.raises(ValueError, match="데이터는 숫자여야 합니다."):
-            parse_unicode_string(data_list)
+            decode_plc_data_to_unicode(data_list)
             
     def test_parse_unicode_string_data_too_large(self):
         """65535를 초과하는 데이터에 대한 예외 테스트"""
         data_list = ["99999"]
         with pytest.raises(OverflowError, match="int too big to convert"):
-            parse_unicode_string(data_list)
+            decode_plc_data_to_unicode(data_list)
             
     def test_parse_unicode_string_complex_string(self):
         """복잡한 문자열 변환 테스트 (data.py의 예제와 동일)"""
         # "V143-00043B/240510/00064" -> 2글자씩 나눠서 변환
         string_data = ["v1", "43", "-0", "00", "43", "B/", "24", "05", "10", "/0", "00", "64"]
         encoded = list(map(lambda x: CharConverter.string_to_16bit_decimal(x), string_data))
-        result = parse_unicode_string(encoded)
+        result = decode_plc_data_to_unicode(encoded)
         # 결과는 2글자씩 변환된 문자열
         assert len(result) == 24  # 12개의 2글자 문자열이 연결되어 총 24글자
         assert result == "v143-00043B/240510/00064"  # 실제 결과값 확인
@@ -322,7 +322,7 @@ class TestIntegration:
         decimal_value = CharConverter.string_to_16bit_decimal(original_string)
         
         # 숫자를 다시 문자열로 변환
-        converted_string = CharConverter.decimal_16bit_to_string(decimal_value)
+        converted_string = CharConverter.decimal_16bit_to_string(int(decimal_value))
         
         # 변환된 문자열이 원본과 일치하는지 확인
         assert converted_string == original_string

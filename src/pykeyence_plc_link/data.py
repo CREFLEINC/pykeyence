@@ -157,7 +157,7 @@ class ReceivedData:
         return _new_data_list
 
 
-def parse_unicode_string(data_list: list[str], byteorder: str = "little") -> str:
+def decode_plc_data_to_unicode(data_list: list[str], byteorder: str = "little") -> str:
     """
     PLC에서 받은 연속 데이터를 유니코드 문자열로 변환하는 유틸리티 함수
     
@@ -228,11 +228,11 @@ if __name__ == "__main__":
     string_data = ["v1", "43", "-0", "00", "43","B/", "24", "05", "10", "/0", "00", "64"]
     encoded = list(map(lambda x: CharConverter.string_to_16bit_decimal(x), string_data))
     print('9', encoded)
-    print('10', parse_unicode_string(encoded))
+    print('10', decode_plc_data_to_unicode(encoded))
 
     # bcr = "V143-00043B/240510/000641"
     string_data = ["v1", "43", "-0", "00", "43","B/", "24", "05", "10", "/0", "00", "64", "1"]
     encoded = list(map(lambda x: CharConverter.string_to_16bit_decimal(x), string_data))
     print('11', encoded)
-    print('12', parse_unicode_string(encoded))
+    print('12', decode_plc_data_to_unicode(encoded))
 

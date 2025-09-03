@@ -47,8 +47,8 @@ from pykeyence_plc_link import KeyencePlcClient
 # Connect to PLC
 client = KeyencePlcClient(host="192.168.0.10", port=8501)
 
-# Read data from PLC
-value = client.read("DM100")
+# Read data from PLC 
+value = client.read("DM100")  # Returns list[str]
 print(f"DM100 value: {value}")
 
 # Write data to PLC (supports both integer and list of integers)
@@ -146,11 +146,11 @@ print(f"16961 -> {string_value}")  # Output: AB
 New utility function for parsing PLC continuous data into unicode strings:
 
 ```python
-from pykeyence_plc_link import parse_unicode_string
+from pykeyence_plc_link import decode_plc_data_to_unicode
 
 # Example with BCR data
 bcr_data = ['12662', '13108', '12333', '12336', '13108', '12098', '13362', '13616', '12337', '12335', '12336', '13366']
-result = parse_unicode_string(bcr_data, byteorder="little")
+result = decode_plc_data_to_unicode(bcr_data, byteorder="little")
 print(f"BCR string: {result}")  # Output: "V143-00043B/240510/00064"
 ```
 
@@ -190,7 +190,7 @@ result_big = cmd_big.encode()
 pykeyence/
 ├── src/pykeyence_plc_link/
 │   ├── client.py          # Main PLC client implementation
-│   ├── data.py            # Command builders, data structures, CharConverter utilities, and parse_unicode_string function
+│   ├── data.py            # Command builders, data structures, CharConverter utilities, and decode_plc_data_to_unicode function
 │   ├── protocol.py        # UDP protocol implementation
 │   ├── monitor.py         # Real-time monitoring functionality
 │   ├── heartbeat.py       # Heartbeat implementation
@@ -276,10 +276,10 @@ class CharConverter:
 - `string_to_16bit_decimal(data, byteorder="little")`: Convert string to 16-bit decimal (returns 5-digit formatted string)
 - `decimal_16bit_to_string(data)`: Convert 16-bit decimal to string
 
-### parse_unicode_string
+### decode_plc_data_to_unicode
 
 ```python
-def parse_unicode_string(data_list: list[str], byteorder: str = "little") -> str
+def decode_plc_data_to_unicode(data_list: list[str], byteorder: str = "little") -> str
 ```
 
 **Parameters:**
@@ -449,7 +449,7 @@ mock_server.stop()
 ### Advanced Data Handling with New Features
 
 ```python
-from pykeyence_plc_link.data import WriteCommand, ReadCommand, CharConverter, parse_unicode_string
+from pykeyence_plc_link.data import WriteCommand, ReadCommand, CharConverter, decode_plc_data_to_unicode
 
 # Create commands manually
 write_cmd = WriteCommand(address="DM100", data="ABC", byteorder="little")
@@ -475,11 +475,11 @@ print(f"Encoded BCR data: {encoded_data}")
 
 # Parse PLC continuous data into unicode string
 plc_data = ['12662', '13108', '12333', '12336', '13108', '12098', '13362', '13616', '12337', '12335', '12336', '13366']
-parsed_string = parse_unicode_string(plc_data, byteorder="little")
+parsed_string = decode_plc_data_to_unicode(plc_data, byteorder="little")
 print(f"Parsed BCR data: {parsed_string}")
 
 # Parse back to string
-decoded_string = parse_unicode_string(encoded_data, byteorder="little")
+decoded_string = decode_plc_data_to_unicode(encoded_data, byteorder="little")
 print(f"Decoded BCR string: {decoded_string}")
 ```
 
@@ -601,7 +601,7 @@ This library implements the Keyence ASCII protocol over UDP:
 ### Version 0.1.9 (Latest)
 - **Major Data Handling Improvements**: Enhanced PLC data compatibility with 5-digit formatting
 - **Class Renaming**: `TwoCharConverter` → `CharConverter` for better clarity
-- **New Utility Function**: Added `parse_unicode_string` for parsing PLC continuous data
+- **New Utility Function**: Added `decode_plc_data_to_unicode` for parsing PLC continuous data
 - **Enhanced Client Interface**: Client now supports both integer and list of integers for write operations
 - **Improved Data Processing**: Better separation of string parsing and data conversion logic
 - **PLC Format Support**: Automatic conversion to PLC-compatible 5-digit string format

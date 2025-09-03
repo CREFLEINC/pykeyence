@@ -7,11 +7,11 @@ from .data import WriteCommand, ReadCommand, ReceivedData
 
 class PlcClientInterface(ABC):
     @abstractmethod
-    def read(self, address: str, count: int = 1) -> str:
+    def read(self, address: str, count: int = 1) -> list[str]:
         pass
 
     @abstractmethod
-    def write(self, address: str, data: str) -> bool:
+    def write(self, address: str, data: Union[int, list[int]]) -> bool:
         pass
 
 
@@ -22,7 +22,7 @@ class KeyencePlcClient(PlcClientInterface):
         self.client = UdpClient(host, port)
         self._lock = threading.Lock()
 
-    def read(self, address: str, count: int = 1) -> str:
+    def read(self, address: str, count: int = 1) -> list[str]:
         with self._lock:
             cmd = ReadCommand(address=address, count=count)
             encoded_cmd = cmd.encode()
