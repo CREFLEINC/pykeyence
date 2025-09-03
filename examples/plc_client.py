@@ -2,12 +2,12 @@ from src.pykeyence_plc_link.client import KeyencePlcClient
 from src.pykeyence_plc_link.mock.mock_keyence_plc_server import MockKeyencePlcServer
 
 
-IP = "192.168.1.50"
+IP = "127.0.0.1"
 PORT = 8501
 
 
-# mock_server = MockKeyencePlcServer(ip=IP, port=PORT)
-# mock_server.start()
+mock_server = MockKeyencePlcServer(ip=IP, port=PORT)
+mock_server.start()
 
 
 client = KeyencePlcClient(host=IP, port=PORT)
