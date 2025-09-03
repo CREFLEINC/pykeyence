@@ -598,7 +598,7 @@ This library implements the Keyence ASCII protocol over UDP:
 
 ## Release Notes
 
-### Version 0.1.8 (Latest)
+### Version 0.1.9 (Latest)
 - **Major Data Handling Improvements**: Enhanced PLC data compatibility with 5-digit formatting
 - **Class Renaming**: `TwoCharConverter` → `CharConverter` for better clarity
 - **New Utility Function**: Added `parse_unicode_string` for parsing PLC continuous data
