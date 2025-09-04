@@ -45,11 +45,11 @@ monitor_b.start()
 while True:
     x = str(input())
     if x == "0":
-        mock_server.memory["DM100"] = "12336"
-        mock_server.memory["DM200"] = "12336"
+        mock_server.memory["DM100"] = "00000"
+        mock_server.memory["DM200"] = "00000"
     elif x == "1":
-        mock_server.memory["DM100"] = "12592"
+        mock_server.memory["DM100"] = "11111"
     elif x == "2":
-        mock_server.memory["DM200"] = "12592"
+        mock_server.memory["DM200"] = "99999"
     elif x == "q":
         break
