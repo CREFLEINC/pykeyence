@@ -598,7 +598,11 @@ This library implements the Keyence ASCII protocol over UDP:
 
 ## Release Notes
 
-### Version 0.1.9 (Latest)
+### Version 0.1.11 (Latest)
+- **Mock Server Default Value Fix**: Fixed default return value in MockKeyencePlcServer from "12336" to "00000" for better testing consistency
+- **Improved Testing Environment**: Enhanced mock server behavior to return standard zero values for uninitialized registers
+
+### Version 0.1.9
 - **Major Data Handling Improvements**: Enhanced PLC data compatibility with 5-digit formatting
 - **Class Renaming**: `TwoCharConverter` → `CharConverter` for better clarity
 - **New Utility Function**: Added `decode_plc_data_to_unicode` for parsing PLC continuous data

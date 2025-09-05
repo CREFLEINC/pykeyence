@@ -46,7 +46,7 @@ class MockKeyencePlcServer(threading.Thread):
             data = data.decode('ascii', errors='ignore')
             if data.startswith('RD') and len(data.split()) == 2:
                 key = data.split()[1]
-                value = self.memory.get(key, "12336")  # 기본값 설정
+                value = self.memory.get(key, "00000")  # 기본값 설정
                 encoded = value.encode('ascii')
                 self.send(encoded, addr)
             elif data.startswith('WR') and len(data.split()) == 3:
