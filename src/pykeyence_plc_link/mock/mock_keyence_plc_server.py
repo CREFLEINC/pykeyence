@@ -44,9 +44,22 @@ class MockKeyencePlcServer(threading.Thread):
                 continue
 
             data = data.decode('ascii', errors='ignore')
+            if data.startswith('RDS'):
+                addr_name = data.split()[1][:2]
+                start_num = int(data.split()[1][2:])
+                count = data.split()[2]
+                values = []
+                for i in range(int(count)):
+                    key = f'{addr_name}{start_num + i}'
+                    value = self.memory.get(key, "00000")
+                    values.append(value)
+                response = ' '.join(values)
+                encoded = response.encode('ascii')
+                self.send(encoded, addr)
+                continue
             if data.startswith('RD') and len(data.split()) == 2:
                 key = data.split()[1]
-                value = self.memory.get(key, "12336")  # 기본값 설정
+                value = self.memory.get(key, "00000")  # 기본값 설정
                 encoded = value.encode('ascii')
                 self.send(encoded, addr)
             elif data.startswith('WR') and len(data.split()) == 3:
